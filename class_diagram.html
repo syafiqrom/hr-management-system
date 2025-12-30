@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Management System - Full Class Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .header {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        .header h1 { font-size: 24px; margin-bottom: 10px; }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .zoom-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .reset-btn { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+        .diagram-container { padding: 20px; overflow: auto; height: calc(100vh - 150px); }
+        .diagram-wrapper {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            min-width: fit-content;
+            transform-origin: top left;
+            transition: transform 0.3s ease;
+        }
+        .zoom-info { color: rgba(255,255,255,0.7); font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏢 HR Management System - Full Class Diagram</h1>
+        <p class="zoom-info">Current Zoom: <span id="zoomLevel">100</span>%</p>
+        <div class="controls">
+            <button class="zoom-btn" onclick="zoomIn()">🔍 Zoom In (+)</button>
+            <button class="zoom-btn" onclick="zoomOut()">🔍 Zoom Out (-)</button>
+            <button class="reset-btn" onclick="resetZoom()">↺ Reset</button>
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <div class="diagram-wrapper" id="diagramWrapper">
+            <pre class="mermaid">
+classDiagram
+    direction TB
+
+    class User {
+        int user_id
+        String name
+        String email
+        String password
+        String phone
+        String ic_number
+        String address
+        Date hired_on
+        String user_role
+        int annual_leave_balance
+        int sick_leave_balance
+        int emergency_leave_balance
+        +create(data) User
+        +find(id) User
+        +findOrFail(id) User
+        +where(column, value) Builder
+        +first() User
+        +update(data) bool
+        +delete() bool
+        +save() bool
+        +all() Collection
+        +attendances() HasMany
+        +leaveRequests() HasMany
+        +schedules() HasMany
+    }
+
+    class Attendance {
+        int attendance_id
+        int user_id
+        int shift_id
+        Date date
+        String status
+        Time clock_in_time
+        Time clock_out_time
+        String notes
+        +create(data) Attendance
+        +find(id) Attendance
+        +where(column, value) Builder
+        +first() Attendance
+        +update(data) bool
+        +delete() bool
+        +employee() BelongsTo
+        +schedule() BelongsTo
+    }
+
+    class LeaveRequest {
+        int request_id
+        int user_id
+        String type
+        Date start_date
+        Date end_date
+        int status
+        String remark
+        +create(data) LeaveRequest
+        +find(id) LeaveRequest
+        +findOrFail(id) LeaveRequest
+        +where(column, value) Builder
+        +first() LeaveRequest
+        +update(data) bool
+        +delete() bool
+        +with(relation) Builder
+        +employee() BelongsTo
+        +status() Attribute
+    }
+
+    class Schedule {
+        int shift_id
+        int user_id
+        String shift_type
+        Date shift_date
+        +create(data) Schedule
+        +find(id) Schedule
+        +where(column, value) Builder
+        +whereBetween(column, range) Builder
+        +first() Schedule
+        +update(data) bool
+        +delete() bool
+        +updateOrCreate(match, data) Schedule
+        +employee() BelongsTo
+        +attendances() HasMany
+    }
+
+    class AuthenticatedSessionController {
+        +create() displayLoginForm
+        +store() authenticateUser
+        +destroy() logoutUser
+    }
+
+    class ProfileController {
+        +edit() displayProfileForm
+        +update() updatePersonalDetails
+    }
+
+    class AttendanceController {
+        +attendanceDashboard() displayDashboard
+        +index() displayAttendanceList
+        +create() displayAttendanceForm
+        +store() submitAttendance
+        +dayShow() displayDayAttendance
+        +dayDelete() deleteDayAttendance
+        +dashboardSignInAttendance() clockIn
+        +dashboardSignOffAttendance() clockOut
+    }
+
+    class RequestController {
+        +index() displayLeaveRequestList
+        +create() displayLeaveRequestForm
+        +store() submitLeaveRequest
+        +show() displayLeaveRequestDetails
+        +update() approveOrRejectRequest
+        +destroy() deleteLeaveRequest
+    }
+
+    class ScheduleController {
+        +admin() displayAdminSchedule
+        +employee() displayMySchedule
+        +assign() assignStaffToShift
+        +week() getWeeklyAssignments
+        +reset() resetWeekSchedule
+        +myWeek() getMySchedule
+        +submitWeek() submitSchedule
+        +day() getDayAssignments
+    }
+
+    class EmployeeController {
+        +index() displayEmployeeList
+        +create() displayCreateForm
+        +store() createEmployee
+        +show() displayEmployeeDetails
+        +edit() displayEditForm
+        +update() updateEmployee
+        +destroy() deleteEmployee
+    }
+
+    class ReportsController {
+        +index() displayAttendanceReport
+    }
+
+    class LoginPage {
+        +displayLoginForm()
+        +submitLogin()
+    }
+
+    class ProfileEditPage {
+        +displayProfileForm()
+        +saveProfile()
+    }
+
+    class AttendanceDashboardPage {
+        +displayDashboard()
+        +clockIn()
+        +clockOut()
+    }
+
+    class AttendanceCreatePage {
+        +displayForm()
+        +submitAttendance()
+    }
+
+    class RequestsPage {
+        +displayList()
+        +navigateToCreate()
+    }
+
+    class RequestCreatePage {
+        +displayForm()
+        +submitRequest()
+    }
+
+    class RequestViewPage {
+        +displayDetails()
+        +approve()
+        +reject()
+    }
+
+    class AdminSchedulePage {
+        +displayCalendar()
+        +assignShift()
+    }
+
+    class MySchedulePage {
+        +displaySchedule()
+        +selectWeek()
+    }
+
+    class EmployeesPage {
+        +displayList()
+        +search()
+    }
+
+    class EmployeeCreatePage {
+        +displayForm()
+        +submit()
+    }
+
+    class ReportsPage {
+        +displayReport()
+        +selectFilters()
+    }
+
+    class Mail {
+        +to(email) Mail
+        +send(mailable) void
+    }
+
+    User "1" --> "*" Attendance : has many
+    User "1" --> "*" LeaveRequest : has many
+    User "1" --> "*" Schedule : has many
+    Attendance "*" --> "1" User : belongs to
+    Attendance "*" --> "1" Schedule : belongs to
+    LeaveRequest "*" --> "1" User : belongs to
+    Schedule "*" --> "1" User : belongs to
+    Schedule "1" --> "*" Attendance : has many
+
+    AuthenticatedSessionController --> User
+    ProfileController --> User
+    AttendanceController --> Attendance
+    AttendanceController --> User
+    AttendanceController --> Schedule
+    RequestController --> LeaveRequest
+    RequestController --> User
+    RequestController --> Mail
+    ScheduleController --> Schedule
+    ScheduleController --> User
+    ScheduleController --> LeaveRequest
+    EmployeeController --> User
+    EmployeeController --> Mail
+    ReportsController --> Attendance
+    ReportsController --> LeaveRequest
+    ReportsController --> User
+
+    LoginPage --> AuthenticatedSessionController
+    ProfileEditPage --> ProfileController
+    AttendanceDashboardPage --> AttendanceController
+    AttendanceCreatePage --> AttendanceController
+    RequestsPage --> RequestController
+    RequestCreatePage --> RequestController
+    RequestViewPage --> RequestController
+    AdminSchedulePage --> ScheduleController
+    MySchedulePage --> ScheduleController
+    EmployeesPage --> EmployeeController
+    EmployeeCreatePage --> EmployeeController
+    ReportsPage --> ReportsController
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+        let currentZoom = 1;
+        function zoomIn() { currentZoom += 0.1; applyZoom(); }
+        function zoomOut() { if (currentZoom > 0.2) { currentZoom -= 0.1; applyZoom(); } }
+        function resetZoom() { currentZoom = 1; applyZoom(); }
+        function applyZoom() {
+            document.getElementById('diagramWrapper').style.transform = `scale(${currentZoom})`;
+            document.getElementById('zoomLevel').textContent = Math.round(currentZoom * 100);
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '+' || e.key === '=') zoomIn();
+            if (e.key === '-') zoomOut();
+            if (e.key === '0') resetZoom();
+        });
+    </script>
+</body>
+</html>
